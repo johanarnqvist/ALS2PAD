@@ -1,10 +1,7 @@
-#Code to determine plant area densities, forest hieghts and ground heights from airborne laser scans.
-#The program has been written by Johan Arnqvist, johan.arnqvist@geo.uu.se for future relase along a scientific article.
-#The results cannot be guarantied in any way at this point in time. Please report bugs to the author.
-#Please do not share the code with anyone as there is a plan to set up a proper git version soon, and I would like to limit the amount of copies out there.
-
-
-
+#   This software may be used, copied, or redistributed as long as it is not sold and this note is reproduced on each copy made. 
+#   This routine is provided as is without any express or implied warranties whatsoever.
+#   For more details See Arnqvist et al. Robust processing of airborne laser scans to plant area density profiles, 2020, biogeosciences.
+# Please send a notification of any bugs to johan.arnqvist[at]geo.uu.se
 
 # -*- coding: utf-8 -*-
 """
@@ -27,16 +24,17 @@ import time
 
 timer1=time.time()
 
-dx=40 #Set the grid size in x [m]
+dx=20 #Set the grid size in x [m]
 dy=20 #Set the grid size in y [m]
-dz=1 #Set the grid size in z [m]
+dz=5 #Set the grid size in z [m]
 
-hmax=36 #The highest trees to search for in m
+hmax=40 #The highest trees to search for in m
 k=0.5 #Extinction coefficient
 
 #Load the file. Specify the path to the file you want analyse.
 
-#A=lp.file.File('E:/Laserdata/Norunda/Norunda_laser/Laserdata_1702_3006/lasdata/10C046_66625_6375_25.las')
+folderget=('E:/Laserdata/Norunda/Norunda_laser/Laserdata_1702_3006/lasdata/')
+fname='10C046_66550_6350_25.las'
 folderget='C:/Users/johar477/Documents/temp/ldata/'
 fname='19B001_63500_3350_25.las'
 A=lp.file.File(folderget+fname)
@@ -104,9 +102,8 @@ th=np.zeros(sx*sy)
 PAI=np.zeros(sx*sy)
 wtrflag=np.zeros(sx*sy)
 
-
-sz=np.int(np.ceil(hmax/dz-1)) #Number of vertical levels
-rz=range(sz+1) #Range in z
+sz=np.int(np.ceil(hmax/dz)) #Number of vertical levels
+rz=range(sz) #Range in z (except ground value)
 
 PAD=np.zeros((sx*sy,sz)) #Allocate space for the gridded average intensities (scaled if ISRR is used)
 Igp=np.zeros(sz+1) #Intensities within the gridbox
@@ -129,8 +126,9 @@ for ix in range(sx):
             gh[sy*ix+iy]=zg
             zgb=z[p]-zg #The heights of the returns falling wihtin the gridbox
             th[sy*ix+iy]=np.max(zgb)
+            Igp[0]=np.sum(Iscale[pgr])
             for iz in rz:
-                Igp[iz]=np.sum(Iscale[p[zgb<((iz+1)*dz)]])
+                Igp[iz+1]=np.sum(Iscale[p[zgb<((iz+1)*dz)]])
             P=Igp/Igp[-1]
             PAI[sy*ix+iy]=-np.mean(np.abs(np.cos(phi[p])))*np.log(P[0])/k
             PAD[sy*ix+iy,:]=-np.diff(-np.mean(np.abs(np.cos(phi[p])))*np.log(P)/k/dz)
