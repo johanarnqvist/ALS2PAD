@@ -33,10 +33,8 @@ k=0.5 #Extinction coefficient
 
 #Load the file. Specify the path to the file you want analyse.
 
-folderget=('E:/Laserdata/Norunda/Norunda_laser/Laserdata_1702_3006/lasdata/')
-fname='10C046_66550_6350_25.las'
-folderget='C:/Users/johar477/Documents/temp/ldata/'
-fname='19B001_63500_3350_25.las'
+folderget=('Enter_folder_path')
+fname='file_name.las'
 A=lp.file.File(folderget+fname)
 
 Int=np.array(A.intensity)
