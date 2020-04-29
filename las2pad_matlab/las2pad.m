@@ -3,7 +3,7 @@
 %   sold and this note is reproduced on each copy made. This
 %   routine is provided as is without any express or implied warranties
 %   whatsoever.
-%
+%   For more details See Arnqvist et al. Robust processing of airborne laser scans to plant area density profiles, 2020, biogeosciences.
 % Please send a notification of any bugs to johan.arnqvist[at]geo.uu.se
 
 %%%----------------------Start of program-------------------------------
@@ -16,9 +16,9 @@ pathend='C:\Users\user\Documents\folderdestinationpath\';
 %%%%-------------Define grid sizes and constants
 
 dx=20; %Grid size in z;
-dy=40; %Grid size in y;
-dz=1; %Gridsize in z-direction
-hmax=36; %The height of the tallest allowed trees
+dy=20; %Grid size in y;
+dz=5; %Gridsize in z-direction
+hmax=40; %The height of the tallest allowed trees
 k=0.5; %Extinction coefficient
 %%%--------------------------------------------------------------
 
@@ -85,18 +85,19 @@ for il=1:length(inds)
     ll(1)=floor(min(X)); %Lower left corner
     ll(2)=floor(min(Y));
     ur(1)=ceil(max(X)); %Upper right
-    ur(2)=deil(max(Y));
+    ur(2)=ceil(max(Y));
 
 
     sx=ceil((ur(1)-ll(1))/dx); %size in x (in grid points)
     sy=ceil((ur(2)-ll(2))/dy); %size in y (in grid points)
+    sz=length(dz:dz:hmax);%size in z (in grid points)
     
     %Allocate matrixes
     gh=zeros(sy,sx); %Ground height
     th=gh;  % Tree height
     PAI=gh; %PAI
     wtrflag=gh; %Flag to indicate if there is water
-    PAD=zeros(sy,sx,length(dz:dz:hmax)-1); %PAD
+    PAD=zeros(sy,sx,sz); %PAD
     
     grp=find(C==2); %Ground hits
     wtp=find(C==9); %Water hits
@@ -121,9 +122,10 @@ for il=1:length(inds)
                 Zp2=Z(p2)-zg; %Store in order to speed up.
                 th(ii,i)=max(Zp2); %The tree height is taken as the maximum within the dx*dy square. 
 
-                I1=zeros(35,1); %Intensity vector in z
-                for i3=dz:dz:hmax
-                    I1(i3)=sum(Iscale(p2((Zp2)<i3))); %All reflections counted equally (scale takes into account the weight in the average)
+                I1=zeros(sz+1,1); %Intensity vector in z
+                I1(1)=sum(Iscale(p2gr));
+                for i3=1:sz
+                    I1(i3+1)=sum(Iscale(p2((Zp2)<(i3*dz)))); %All reflections counted equally (scale takes into account the weight in the average)
                 end
                 P=(I1)./(I1(end)); %Ratio of reflections to total number of reflections
                 %Calculcate PAD and PAI with Beer-Lambert law
